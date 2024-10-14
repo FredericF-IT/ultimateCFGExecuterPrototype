@@ -3,7 +3,6 @@ package de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.evaluation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import de.uni_freiburg.informatik.ultimate.logic.Rational;
 import de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.CFGExecuterObserver;
 
 public class ExecutableTerm{
@@ -14,7 +13,7 @@ public class ExecutableTerm{
 	public final String target;
 	public final EvalTerm transitionTerm;
 	private EvalTerm preCondition;
-	private EvalTerm postCondition = ApplicationEvalTerm.trivialTrue;
+	private EvalTerm postCondition = ConstantEvalTerm.trivialTrue;
 	
 	public ExecutableTerm(String mSource, 
 			String mTarget, 
@@ -32,9 +31,9 @@ public class ExecutableTerm{
 		transitionTerm = mTransitionTerm;
 	}
 	
-	private void evaluatePreCondition() {
+	/*private void evaluatePreCondition() {
 		EvalTerm pre = transitionTerm.getPreCondition();
-		pre = pre == null ? ApplicationEvalTerm.trivialTrue : pre;
+		pre = pre == null ? ConstantEvalTerm.trivialTrue : pre;
 		preCondition = pre;
 		
 		for(ExecutableTerm child : children) {
@@ -43,16 +42,16 @@ public class ExecutableTerm{
 				continue;
 			}
 		}
-	}
+	}* /
 	
 	private static int indexOfInverse(ArrayList<EvalTerm> args, EvalTerm obj) {
 		if(obj.type != EvalTerm.formulaType.formula) {
 			return -1;
 		}
 		return args.indexOf(((ApplicationEvalTerm) obj).reverseTerm());
-	}
+	}*/
 	
-	private void setPostCondition() {
+	/*private void setPostCondition() {
 		ArrayList<EvalTerm> args = new ArrayList<>();
 		for(ExecutableTerm child : children) {
 			EvalTerm postPart = child.transitionTerm.getPreCondition();
@@ -74,13 +73,13 @@ public class ExecutableTerm{
 		if (args.size() == 0) {
 			return;
 		}
-		postCondition = new ApplicationEvalTerm(args, CFGExecuterObserver.opToFunction.get("or"), Boolean.class, "or");
+		postCondition = new ApplicationEvalTerm(args, Boolean.class, "or");
 	}// ApplicationEvalTerm(ArrayList<EvalTerm> mArgs, Function<ArrayList<EvalTerm>, Object> mFormula, Class<?> mOutType, String mSymbol) {  
-	
+	*/
 	public void addChildren(ArrayList<ExecutableTerm> newChildren) {
 		children.addAll(newChildren);
-		setPostCondition();
-		evaluatePreCondition();
+//		setPostCondition();
+//		evaluatePreCondition();
 		//printMe();
 	}
 	
@@ -93,7 +92,7 @@ public class ExecutableTerm{
 	public void smartHavoc() {
 		// TODO
 		for(VariableEvalTerm inVar : inVars.values()) {
-			if(!inVar.isHavoced) {
+			if(!inVar.isHavocedIn) {
 				continue;
 			}
 			if(ArrayVarEvalTerm.class.isInstance(inVar)) {
@@ -101,20 +100,25 @@ public class ExecutableTerm{
 			}
 
 			boolean wasNegative;
-			switch(inVar.outType.getSimpleName()) {
-				case "Integer":
+			switch(inVar.outType) {
+				case integer:
 					wasNegative = ((int) inVar.eval()) < 0;
-					inVar.assign(CFGExecuterObserver.havocInt(!wasNegative));
+					inVar.assign(HavocGen.havocInt(!wasNegative));
 					break;
-				case "Boolean":
-					inVar.assign(CFGExecuterObserver.havocBool());
+				case bool:
+					inVar.assign(HavocGen.havocBool());
 					break;
-				case "Rational":
-					wasNegative = ((Rational) inVar.eval()).isNegative();
-					inVar.assign(CFGExecuterObserver.havocRational(!wasNegative));
+				//case "Rational":
+				//	wasNegative = ((Rational) inVar.eval()).isNegative();
+				//	inVar.assign(CFGExecuterObserver.havocRational(!wasNegative));
+				//	break;
+				//default:
+				//	System.out.println("Unknown variable type " + inVar.outType.getSimpleName());
+				//	break;
+				case array:
 					break;
-				default:
-					System.out.println("Unknown variable type " + inVar.outType.getSimpleName());
+				case bitSet:
+					// TODO
 					break;
 			}
 

@@ -3,10 +3,13 @@ package de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.evaluation;
 import java.util.HashMap;
 
 public class ConstantEvalTerm extends EvalTerm {
+	public static final ConstantEvalTerm trivialTrue = new ConstantEvalTerm(true, DataStructure.bool);
+	public static final ConstantEvalTerm trivialFalse = new ConstantEvalTerm(false, DataStructure.bool);
+	
 	private Object value;
 	
 	
-	public ConstantEvalTerm(Object mValue, Class<?> mOutType) { 
+	public ConstantEvalTerm(Object mValue, DataStructure mOutType) { 
 		super(mOutType);
 		assert mOutType.isInstance(mValue);
 		type = formulaType.constant;
@@ -38,14 +41,19 @@ public class ConstantEvalTerm extends EvalTerm {
 
 	@Override
 	public String toStringThorough() {
-		return toString("");
+		return value.toString();
 	}
 
-	@Override
+	/*@Override
 	public EvalTerm getPreCondition() {
 		if(outType == Boolean.class) {
 			return this;
 		}
 		return null;
+	}*/
+
+	@Override
+	public Guard getGuard() {
+		return Guard.trivialTrue;
 	}
 }

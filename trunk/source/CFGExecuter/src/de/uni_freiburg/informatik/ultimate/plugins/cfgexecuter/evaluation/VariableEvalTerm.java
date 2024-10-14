@@ -3,18 +3,16 @@ package de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.evaluation;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import de.uni_freiburg.informatik.ultimate.logic.Rational;
-import de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.CFGExecuterObserver;
-
 public class VariableEvalTerm extends EvalTerm {
 	public final String localName;
 	public final String trueName;
 	protected Object value;
 	public final boolean isAssignable;
 	public final boolean isOutVar;
-	public final boolean isHavoced;
+	public final boolean isHavocedIn;
+	public final boolean isHavocedOut;
 	
-	public VariableEvalTerm(String mName, String mTrueName, Class<?> mOutType, Object mValue, boolean mIsAssignable, boolean mIsOutVar, boolean mIsHavoced) { 
+	public VariableEvalTerm(String mName, String mTrueName, DataStructure mOutType, Object mValue, boolean mIsAssignable, boolean mIsOutVar, boolean mIsHavocedIn, boolean mIsHavocedOut) { 
 		super(mOutType);
 		assert mOutType.isInstance(mValue);
 		type = formulaType.variable;
@@ -23,14 +21,15 @@ public class VariableEvalTerm extends EvalTerm {
 		value = mValue;
 		isAssignable = mIsAssignable;
 		isOutVar = mIsOutVar;
-		isHavoced = mIsHavoced;
+		isHavocedIn = mIsHavocedIn;
+		isHavocedOut = mIsHavocedOut;
 		if(isOutVar) {
 			outVars.put(trueName, this);
 		}
 	}
 
 	public VariableEvalTerm copy() {
-		return new VariableEvalTerm(localName, trueName, outType, value, isAssignable, isOutVar, isHavoced);
+		return new VariableEvalTerm(localName, trueName, outType, value, isAssignable, isOutVar, isHavocedIn, isHavocedOut);
 	}
 
 	/**
@@ -45,11 +44,7 @@ public class VariableEvalTerm extends EvalTerm {
 	public void assign(Object newValue) {
 		if(!outType.isInstance(newValue)) {
 			System.out.println("Warning: Wrong value type "+ newValue.getClass().getSimpleName() +" assigned to variable "+ localName +". Attempting cast.");
-			if(Rational.class.isInstance(newValue) && outType == Integer.class) {
-				newValue = CFGExecuterObserver.castRational((Rational) newValue);
-			} else {
-				newValue = outType.cast(newValue);
-			}
+			newValue = outType.getType().cast(newValue);
 		}
 		value = newValue;
 	}
@@ -80,7 +75,7 @@ public class VariableEvalTerm extends EvalTerm {
 
 	@Override
 	public String toStringThorough() {
-		return trueName + "="  + localName + "=" + value;
+		return trueName + /*"="  + localName + */"=" + value;
 	}
 
 
@@ -98,11 +93,16 @@ public class VariableEvalTerm extends EvalTerm {
 	}
 
 
-	@Override
+	/*@Override
 	public EvalTerm getPreCondition() {
 		if(outType == Boolean.class) {
 			return this;
 		}
 		return null;
+	}*/
+
+	@Override
+	public Guard getGuard() {
+		return Guard.trivialTrue;
 	}
 }

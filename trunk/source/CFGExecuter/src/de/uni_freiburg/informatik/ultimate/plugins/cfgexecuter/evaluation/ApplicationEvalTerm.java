@@ -12,12 +12,10 @@ import de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.CFGExecuterObserv
 import static java.util.Map.entry;
 
 public class ApplicationEvalTerm extends EvalTerm {
-	public static ApplicationEvalTerm trivialTrue = new ApplicationEvalTerm(new ArrayList<>(), (args) -> true, Boolean.class, "true");
-	public static ApplicationEvalTerm trivialFalse = new ApplicationEvalTerm(new ArrayList<>(), (args) -> false, Boolean.class, "false");
 	
 	public ArrayList<EvalTerm> args;
 	private Function<ArrayList<EvalTerm>, Object> formula;
-	private String symbol;
+	public final String symbol;
 	public static final HashSet<String> compareSymbols = new HashSet<>(Arrays.asList("==", "<=", ">=", "<", ">", "not"));
 	
 	public static ApplicationEvalTerm reverseAssignmentToVariable(VariableEvalTerm variableToSolveFor, ApplicationEvalTerm equivalence) throws Exception {
@@ -31,7 +29,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 			boolean varIsLeft = equivalence.args.get(0).containsVariable(false, false, variableToSolveFor.localName);
 			ApplicationEvalTerm varContainer = (ApplicationEvalTerm) (varIsLeft ?  equivalence.args.get(0) : equivalence.args.get(1));
 			EvalTerm otherPart = (!varIsLeft ?  equivalence.args.get(0) : equivalence.args.get(1));
-			Function<ArrayList<EvalTerm>, Object> function;
+			//Function<ArrayList<EvalTerm>, Object> function;
 			ArrayList<EvalTerm> arguments = new ArrayList<>();
 			ArrayList<EvalTerm> argumentsEquiv = new ArrayList<>();
 			EvalTerm innerVarContainer;
@@ -46,12 +44,12 @@ public class ApplicationEvalTerm extends EvalTerm {
 					// <=> innerVarContainer=otherPart-innerOtherPart
 					
 					arguments.add(otherPart); arguments.add(innerOtherPart);
-					function = (args) -> { return ((int) args.get(0).eval()) - ((int) args.get(1).eval()); };
-					EvalTerm minusTerm = new ApplicationEvalTerm(arguments, function, Integer.class, "-");
+					//function = (args) -> { return ((int) args.get(0).eval()) - ((int) args.get(1).eval()); };
+					EvalTerm minusTerm = new ApplicationEvalTerm(arguments, DataStructure.integer, "-");
 
 					argumentsEquiv.add(innerVarContainer);
 					argumentsEquiv.add(minusTerm);
-					equivalence = new ApplicationEvalTerm(argumentsEquiv, equivalence.formula, Boolean.class, "=");
+					equivalence = new ApplicationEvalTerm(argumentsEquiv, DataStructure.bool, "=");
 					break;
 				case "-":
 					varIsLeft = varContainer.args.get(0).containsVariable(false, false, variableToSolveFor.localName);
@@ -62,12 +60,12 @@ public class ApplicationEvalTerm extends EvalTerm {
 					// <=> innerVarContainer=otherPart+innerOtherPart
 					
 					arguments.add(otherPart); arguments.add(innerOtherPart);
-					function = (args) -> { return ((int) args.get(0).eval()) + ((int) args.get(1).eval()); };
-					EvalTerm plusTerm = new ApplicationEvalTerm(arguments, function, Integer.class, "+");
+					//function = (args) -> { return ((int) args.get(0).eval()) + ((int) args.get(1).eval()); };
+					EvalTerm plusTerm = new ApplicationEvalTerm(arguments, DataStructure.integer, "+");
 
 					argumentsEquiv.add(innerVarContainer);
 					argumentsEquiv.add(plusTerm);
-					equivalence = new ApplicationEvalTerm(argumentsEquiv, equivalence.formula, Boolean.class, "=");
+					equivalence = new ApplicationEvalTerm(argumentsEquiv, DataStructure.bool, "=");
 					break;
 			}
 			CFGExecuterObserver.printLnIf("New Equality:\n" + equivalence);
@@ -84,7 +82,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 		return false;
 	}
 	
-	public ApplicationEvalTerm(ArrayList<EvalTerm> mArgs, Function<ArrayList<EvalTerm>, Object> mFormula, Class<?> mOutType, String mSymbol) {  
+	public ApplicationEvalTerm(ArrayList<EvalTerm> mArgs, DataStructure mOutType, String mSymbol) {  
 		super(mOutType);
 		type = formulaType.formula;
 		
@@ -93,7 +91,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 			outVars.putAll(arg.outVars);
 		}
 		
-		formula = mFormula;
+		formula = TermParser.opToFunction.get(mSymbol);
 		symbol = mSymbol;
 	}
 	
@@ -107,7 +105,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 		}
 		assert outType.isInstance(result);
 		
-		return outType.cast(result);
+		return outType.getType().cast(result);
 	}
 	
 	public boolean isAssignment() {
@@ -162,7 +160,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 	
 	@Override
@@ -171,14 +169,16 @@ public class ApplicationEvalTerm extends EvalTerm {
 		for(EvalTerm var : args) {
 			lines.add(var.toStringThorough());
 		}
-		return symbol + "[" + String.join(", ", lines) + "]";
+		return lines.size() > 0 ? 
+				(lines.size() == 1 ? symbol : "") + "[" + String.join(" "+symbol+" ", lines) + "]" : 
+				symbol;
 	}
 
 	/**
 	 * Pre condition if:
 	 * - Is not an assigment
 	 * - Does not contain assignment
-	 */
+	 * /
 	@Override
 	public EvalTerm getPreCondition() {
 		if(symbol == "and") {
@@ -208,7 +208,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 			if(newArgs.size() == 0) {
 				return null;
 			} else if (newArgs.size() >= 2) {
-				return new ApplicationEvalTerm(newArgs, formula, outType, symbol);
+				return new ApplicationEvalTerm(newArgs, outType, symbol);
 			} else {
 				return newArgs.get(0);
 			}
@@ -217,7 +217,7 @@ public class ApplicationEvalTerm extends EvalTerm {
 			return null;
 		}
 		return this;
-	}
+	}*/
 
 	public boolean isInverse(EvalTerm obj) {
 		if(!obj.getClass().isInstance(this)) {
@@ -274,6 +274,11 @@ public class ApplicationEvalTerm extends EvalTerm {
 		ArrayList<EvalTerm> newArgs = new ArrayList<>();
 		newArgs.add(args.get(1));
 		newArgs.add(args.get(0));
-		return new ApplicationEvalTerm(newArgs, CFGExecuterObserver.opToFunction.get(newSymbol), outType, newSymbol);
+		return new ApplicationEvalTerm(newArgs, outType, newSymbol);
+	}
+
+	@Override
+	public Guard getGuard() {
+		return Guard.getGuard(this);
 	}
 }

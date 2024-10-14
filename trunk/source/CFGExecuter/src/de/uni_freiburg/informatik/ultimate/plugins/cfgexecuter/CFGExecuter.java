@@ -9,6 +9,7 @@ import de.uni_freiburg.informatik.ultimate.core.model.models.ModelType;
 import de.uni_freiburg.informatik.ultimate.core.model.observers.IObserver;
 import de.uni_freiburg.informatik.ultimate.core.model.preferences.IPreferenceInitializer;
 import de.uni_freiburg.informatik.ultimate.core.model.services.IUltimateServiceProvider;
+import de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.evaluation.HavocGen;
 
 public class CFGExecuter implements IGenerator {
 
@@ -34,7 +35,7 @@ public class CFGExecuter implements IGenerator {
 
 	@Override
 	public String getPluginID() {
-		System.out.println("Havoc max int size " + CFGExecuterObserver.havocMax);
+		System.out.println("Havoc max int size " + HavocGen.havocMax);
 		return PLUGIN_ID;
 	}
 

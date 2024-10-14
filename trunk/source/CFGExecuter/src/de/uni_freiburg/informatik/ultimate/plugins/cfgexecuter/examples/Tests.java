@@ -90,9 +90,6 @@ public class Tests{
 	
 	private static boolean bank(EvaluationState evStateRoot, 
 			String finalState) {
-		
-		CFGExecuterObserver.printLnIf(CFGExecuterObserver.havocRecord);
-
 		HashMap<String, VariableEvalTerm> InVars = evStateRoot.getChild().getVariables();
 		HashMap<String, VariableEvalTerm> OutVars = evStateRoot.getFinalChild().getVariables();
 		

@@ -1,8 +1,8 @@
 package de.uni_freiburg.informatik.ultimate.plugins.cfgexecuter.evaluation;
 
 public class BooleanVarEvalTerm extends VariableEvalTerm {
-	public BooleanVarEvalTerm(String mName, String mTrueName, boolean mValue, boolean mIsAssignTrue, boolean mIsOutVar, boolean mIsHavoced) { 
-		super(mName, mTrueName, Boolean.class, mValue, mIsAssignTrue, mIsOutVar, mIsHavoced);
+	public BooleanVarEvalTerm(String mName, String mTrueName, boolean mValue, boolean mIsAssignTrue, boolean mIsOutVar, boolean mIsHavoced, boolean mIsHavocedOut) { 
+		super(mName, mTrueName, DataStructure.bool, mValue, mIsAssignTrue, mIsOutVar, mIsHavoced, mIsHavocedOut);
 	}
 	
 	@Override
